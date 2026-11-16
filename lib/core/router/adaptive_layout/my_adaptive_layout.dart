@@ -105,7 +105,7 @@ class MyAdaptiveLayout extends HookConsumerWidget {
                         node: navScopeNode,
                         child: NavigationRail(
                           extended: Breakpoint(context).isDesktop(),
-                          destinations: _navRailDests(_actions(t, showProfilesAction, isMobileBreakpoint)),
+                          destinations: _navRailDests(_actions(t, showProfilesAction, isMobileBreakpoint, connected)),
                           selectedIndex: navigationShell.currentIndex,
                           onDestinationSelected: (index) => _onTap(context, index),
                           trailing: Breakpoint(context).isDesktop()
@@ -133,8 +133,14 @@ class MyAdaptiveLayout extends HookConsumerWidget {
                     node: navScopeNode,
                     child: NavigationBar(
                       selectedIndex: navigationShell.currentIndex <= 1 ? navigationShell.currentIndex : 0,
-                      destinations: _navDests(_actions(t, showProfilesAction, isMobileBreakpoint)),
-                      onDestinationSelected: (index) => _onTap(context, index),
+                      destinations: _navDests(_actions(t, showProfilesAction, isMobileBreakpoint, connected)),
+                      onDestinationSelected: (index) {
+                        if (index == 1) {
+                          ref.read(connectionNotifierProvider.notifier).toggleConnection();
+                          return;
+                        }
+                        _onTap(context, index == 2 ? 1 : index);
+                      },
                     ),
                   )
                 : null,
@@ -149,7 +155,7 @@ class MyAdaptiveLayout extends HookConsumerWidget {
     navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex);
   }
 
-  List<ShellRouteAction> _actions(Translations t, bool showProfilesAction, bool isMobileBreakpoint) => [
+  List<ShellRouteAction> _actions(Translations t, bool showProfilesAction, bool isMobileBreakpoint, bool connected) => [
     ShellRouteAction(Icons.home_rounded, t.pages.home.title),
     if (isMobileBreakpoint) ShellRouteAction(connected ? Icons.shield_rounded : Icons.shield_outlined, connected ? 'روشن' : 'خاموش'),
     if (showProfilesAction && !isMobileBreakpoint) ShellRouteAction(Icons.view_list_rounded, t.pages.profiles.title),
