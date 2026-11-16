@@ -1,0 +1,34 @@
+# Build only Android APKs for the selected branch.
+# The output is uploaded as the android-apk artifact.
+name: Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Build channel
+        type: choice
+        required: true
+        default: dev
+        options:
+          - dev
+          - prod
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    uses: ./.github/workflows/build-android.yml
+    secrets: inherit
+    permissions:
+      contents: read
+    with:
+      release: true
+      channel: ${{ inputs.channel }}
+      targets: '["apk"]'
+      generated-code: false
