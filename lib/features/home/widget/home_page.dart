@@ -4,9 +4,11 @@ import 'package:gap/gap.dart';
 import 'package:hiddify/core/app_info/app_info_provider.dart';
 import 'package:hiddify/core/localization/translations.dart';
 import 'package:hiddify/core/router/bottom_sheets/bottom_sheets_notifier.dart';
-import 'package:hiddify/features/home/widget/connection_button.dart';
 import 'package:hiddify/features/home/widget/local_proxy_hint.dart';
 import 'package:hiddify/features/profile/notifier/active_profile_notifier.dart';
+import 'package:hiddify/features/profile/overview/profiles_notifier.dart';
+import 'package:hiddify/features/connection/model/connection_status.dart';
+import 'package:hiddify/features/connection/notifier/connection_notifier.dart';
 import 'package:hiddify/features/profile/widget/profile_tile.dart';
 import 'package:hiddify/features/proxy/active/active_proxy_card.dart';
 import 'package:hiddify/features/proxy/active/active_proxy_delay_indicator.dart';
@@ -23,6 +25,9 @@ class HomePage extends HookConsumerWidget {
     final t = ref.watch(translationsProvider).requireValue;
     // final hasAnyProfile = ref.watch(hasAnyProfileProvider);
     final activeProfile = ref.watch(activeProfileProvider);
+    final allProfiles = ref.watch(profilesNotifierProvider);
+    final connectionStatus = ref.watch(connectionNotifierProvider).valueOrNull;
+    final isConnected = connectionStatus is Connected;
 
     return Scaffold(
       appBar: AppBar(
@@ -147,21 +152,65 @@ class HomePage extends HookConsumerWidget {
                               ),
                               _ => const Text(""),
                             },
-                            const SliverFillRemaining(
-                              hasScrollBody: false,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [ConnectionButton(), ActiveProxyDelayIndicator()],
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            'کانفیگ‌های من',
+                                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                                          ),
+                                        ),
+                                        TextButton.icon(
+                                          onPressed: () => ref.read(bottomSheetsNotifierProvider.notifier).showProfilesOverview(),
+                                          icon: const Icon(Icons.tune_rounded, size: 18),
+                                          label: const Text('مدیریت'),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                  ActiveProxyFooter(),
-                                  Gap(32),
-                                ],
+                                    allProfiles.when(
+                                      data: (profiles) => Column(
+                                        children: [
+                                          for (final profile in profiles)
+                                            Padding(
+                                              padding: const EdgeInsets.only(bottom: 8),
+                                              child: ProfileTile(
+                                                key: ValueKey(profile.id),
+                                                profile: profile,
+                                                isMain: profile.active,
+                                                margin: EdgeInsets.zero,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      loading: () => const LinearProgressIndicator(),
+                                      error: (error, stackTrace) => Text(t.presentShortError(error)),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Center(
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            isConnected ? Icons.shield_rounded : Icons.shield_outlined,
+                                            size: 38,
+                                            color: isConnected ? Colors.green : theme.colorScheme.onSurfaceVariant,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(isConnected ? 'روشن' : 'خاموش', style: theme.textTheme.titleSmall),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const ActiveProxyDelayIndicator(),
+                                    const ActiveProxyFooter(),
+                                    const SizedBox(height: 24),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
