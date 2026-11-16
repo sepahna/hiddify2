@@ -26,8 +26,6 @@ class HomePage extends HookConsumerWidget {
     // final hasAnyProfile = ref.watch(hasAnyProfileProvider);
     final activeProfile = ref.watch(activeProfileProvider);
     final allProfiles = ref.watch(profilesNotifierProvider);
-    final connectionStatus = ref.watch(connectionNotifierProvider).valueOrNull;
-    final isConnected = connectionStatus is Connected;
 
     return Scaffold(
       appBar: AppBar(
@@ -192,19 +190,6 @@ class HomePage extends HookConsumerWidget {
                                       error: (error, stackTrace) => Text(t.presentShortError(error)),
                                     ),
                                     const SizedBox(height: 12),
-                                    Center(
-                                      child: Column(
-                                        children: [
-                                          Icon(
-                                            isConnected ? Icons.shield_rounded : Icons.shield_outlined,
-                                            size: 38,
-                                            color: isConnected ? Colors.green : theme.colorScheme.onSurfaceVariant,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(isConnected ? 'روشن' : 'خاموش', style: theme.textTheme.titleSmall),
-                                        ],
-                                      ),
-                                    ),
                                     const SizedBox(height: 8),
                                     const ActiveProxyDelayIndicator(),
                                     const ActiveProxyFooter(),
