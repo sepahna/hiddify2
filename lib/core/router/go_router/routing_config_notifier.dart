@@ -172,6 +172,15 @@ class RoutingConfigNotifier extends _$RoutingConfigNotifier {
             StatefulShellBranch(
               routes: <GoRoute>[
                 GoRoute(
+                  name: 'connection',
+                  path: '/connection',
+                  builder: (_, _) => FocusScope(node: FocusScopeNode(), child: const HomePage()),
+                ),
+              ],
+            ),
+            StatefulShellBranch(
+              routes: <GoRoute>[
+                GoRoute(
                   name: 'settings',
                   path: '/settings',
                   builder: (_, _) => FocusScope(node: branchesScope['settings'], child: SettingsPage()),
